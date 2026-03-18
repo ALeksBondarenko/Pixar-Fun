@@ -1,55 +1,37 @@
 //
 //  ContentView.swift
-//  Pixar Fun
+//  Pixar Fan
 //
-//  Created by Александр Бондаренко on 24.01.2026.
+//  Created by Александр Бондаренко on 06.12.2025.
 //
 
 import SwiftUI
 import SwiftData
+import Swinject
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
-
+    @EnvironmentObject var coordinator: Coordinator
+    
     var body: some View {
-        NavigationSplitView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
-                    }
-                }
-                .onDelete(perform: deleteItems)
+        TabView {
+            Tab("movies_tab_name", systemImage: "movieclapper") {
+                MoviesScreen(viewModel: DIContainer.shared.container.resolve(MoviesViewModel.self)!)
+                    .environmentObject(coordinator)
             }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
-                }
+            
+            Tab("watchlist_tab_name", systemImage: "bookmark") {
+                WatchListScreen(viewModel: DIContainer.shared.container.resolve(WatchListViewModel.self)!)
+                    .environmentObject(coordinator)
             }
-        } detail: {
-            Text("Select an item")
-        }
-    }
-
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
-        }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
+            
+            Tab("favorite_tab_name", systemImage: "heart") {
+                FavotireMoviesScreen(viewModel: DIContainer.shared.container.resolve(FavotireMoviesViewModel.self)!)
+                    .environmentObject(coordinator)
+            }
+            
+            Tab("search_tab_name", systemImage: "magnifyingglass") {
+                SearchScreen(viewModel: DIContainer.shared.container.resolve(SearchViewModel.self)!)
+                .environmentObject(coordinator)
             }
         }
     }
@@ -57,5 +39,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
+        .environmentObject(Coordinator())
 }
