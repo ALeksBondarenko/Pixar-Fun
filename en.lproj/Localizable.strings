@@ -1,0 +1,26 @@
+/* 
+  Localizable.strings
+  Pixar Fun
+
+  Created by Александр Бондаренко on 24.01.2026.
+  
+*/
+
+
+"invalidAPIKey" = "Invalid API-key";
+"authenticationFailed" = "Authentication failed";
+"invalidParameters" = "Invalid parameters";
+"notFound" = "Not found";
+"rateLimited" = "Rate limited. Try again later";
+"serviceOffline" = "Service offline. Try again later";
+"internalServerError" = "Internal server error. Try again later";
+
+"noInternet" = "Connection failed. Try again later";
+"timeout" = "Connection timeout. Try again later";
+"connectionLost" = "Connection lost. Try again later";
+"cannotConnectToHost" = "Cannot connect to host. Try again later";
+"networkRestricted" = "Network restricted. Try again later";
+"unknown" = "Unknown fail. Try again later";
+
+"repeatButton" = "Retry";
+"cancelButton" = "Cancel";
