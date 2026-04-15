@@ -19,20 +19,20 @@ final class MovieDetailRepositoryImpl: MovieDetailRepository {
         try await service.getDetails(movieId: movieId)
     }
     
-    func addToFavorites(accountId: Int, movieId: Int) async throws -> Bool {
-        try await service.changeFavoriteList(accountId: accountId, request: FavoriteRequest(mediaId: movieId, favorite: true)).success
+    func addToFavorites(movieId: Int) async throws -> Bool {
+        try await service.changeFavoriteList(accountId: Environment.accountId, request: FavoriteRequest(mediaId: movieId, favorite: true)).success
     }
     
-    func removeToFavorites(accountId: Int, movieId: Int) async throws -> Bool {
-        try await service.changeFavoriteList(accountId: accountId, request: FavoriteRequest(mediaId: movieId, favorite: false)).success
+    func removeToFavorites(movieId: Int) async throws -> Bool {
+        try await service.changeFavoriteList(accountId: Environment.accountId, request: FavoriteRequest(mediaId: movieId, favorite: false)).success
     }
     
-    func addToWatchLater(accountId: Int, movieId: Int) async throws -> Bool {
-        try await service.changeWatchLater(accountId: accountId, request: WachListRequest(mediaId: movieId, watchlist: true)).success
+    func addToWatchLater(movieId: Int) async throws -> Bool {
+        try await service.changeWatchLater(accountId: Environment.accountId, request: WachListRequest(mediaId: movieId, watchlist: true)).success
     }
     
-    func removeToWatchLater(accountId: Int, movieId: Int) async throws -> Bool {
-        try await service.changeWatchLater(accountId: accountId, request: WachListRequest(mediaId: movieId, watchlist: false)).success
+    func removeToWatchLater(movieId: Int) async throws -> Bool {
+        try await service.changeWatchLater(accountId: Environment.accountId, request: WachListRequest(mediaId: movieId, watchlist: false)).success
     }
     
     

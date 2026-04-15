@@ -8,6 +8,8 @@
 import Foundation
 
 enum ConnectionError: Error {
+    case noUrl
+    case badUrl
     case noInternet
     case timeout
     case connectionLost

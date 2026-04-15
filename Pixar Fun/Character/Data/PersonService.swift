@@ -8,48 +8,43 @@
 import Foundation
 
 protocol PersonServiceProtocol {
-    
+
     func getPerson(id: Int) async throws -> Person
-    
+
     func getPhotos(personId: Int) async throws -> PersonImages
-    
+
     func getMoviesWithPerson(personId: Int, page: Int) async throws -> Page
 }
 
 class PersonService: PersonServiceProtocol {
     private let networkClient: NetworkClient
-    
+
     init(networkClient: NetworkClient) {
         self.networkClient = networkClient
     }
-    
+
     func getPerson(id: Int) async throws -> Person {
         try await networkClient.request(
-            httpMethod: .GET,
-            stringUrl: "https://api.themoviedb.org/3/person/\(id)",
-            queryParams: ["language":iso3166LanguageCode(Locale.current)]
+            .get("https://api.themoviedb.org/3/person/\(id)"),
+            queryParams: [Param(name: "language", value: iso3166LanguageCode(Locale.current))]
         )
     }
-    
+
     func getPhotos(personId: Int) async throws -> PersonImages {
-        try await networkClient.request(
-            httpMethod: .GET,
-            stringUrl: "https://api.themoviedb.org/3/person/\(personId)/images"
-        )
+        try await networkClient.request(.get("https://api.themoviedb.org/3/person/\(personId)/images"))
     }
-    
+
     func getMoviesWithPerson(personId: Int, page: Int) async throws -> Page {
         try await networkClient.request(
-            httpMethod: .GET,
-            stringUrl: "https://api.themoviedb.org/3/discover/movie",
+            .get("https://api.themoviedb.org/3/discover/movie"),
             queryParams: [
-                "include_adult":"false",
-                "language":iso3166LanguageCode(Locale.current),
-                "page":"\(page)",
-                "sort_by":"primary_release_date.desc",
-                "with_companies":"3",
-                "with_cast":"\(personId)",
-                "with_genres":"16",
+                Param(name: "include_adult", value: "false"),
+                Param(name: "language", value: iso3166LanguageCode(Locale.current)),
+                Param(name: "page", value: page),
+                Param(name: "sort_by", value: "primary_release_date.desc"),
+                Param(name: "with_companies", value: "3"),
+                Param(name: "with_cast", value: personId),
+                Param(name: "with_genres", value: "16"),
             ]
         )
     }

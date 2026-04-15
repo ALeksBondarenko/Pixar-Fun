@@ -33,57 +33,46 @@ class MovieDetailsService: MovieDetailsServiceProtocol {
     
     func getDetails(movieId: Int) async throws -> MovieDetails {
         try await networkClient.request(
-            httpMethod: .GET,
-            stringUrl: "https://api.themoviedb.org/3/movie/\(movieId)",
-            queryParams: ["language":iso3166LanguageCode(Locale.current)]
+            .get("https://api.themoviedb.org/3/movie/\(movieId)"),
+            queryParams: [Param(name: "language", value: iso3166LanguageCode(Locale.current))]
         )
     }
     
     func getStatus(movieId: Int) async throws -> MovieStatus {
-        try await networkClient.request(
-            httpMethod: .GET,
-            stringUrl: "https://api.themoviedb.org/3/movie/\(movieId)/account_states"
-        )
+        try await networkClient.request(.get("https://api.themoviedb.org/3/movie/\(movieId)/account_states"))
     }
     
     func changeFavoriteList(accountId: Int, request: FavoriteRequest) async throws -> FavoriteResponse {
         try await networkClient.request(
-            httpMethod: .POST,
-            stringUrl: "https://api.themoviedb.org/3/account/\(accountId)/favorite",
-            headers: [ "content-type": "application/json"],
+            .post("https://api.themoviedb.org/3/account/\(accountId)/favorite"),
+            headers: [.contentType(.json)],
             body: request,
         )
     }
     
     func changeWatchLater(accountId: Int, request: WachListRequest) async throws -> FavoriteResponse {
         try await networkClient.request(
-            httpMethod: .POST,
-            stringUrl: "https://api.themoviedb.org/3/account/\(accountId)/watchlist",
-            headers: [ "content-type": "application/json"],
+            .post("https://api.themoviedb.org/3/account/\(accountId)/watchlist"),
+            headers: [.contentType(.json)],
             body: request,
         )
     }
     
     func getVideos(movieId: Int) async throws -> VideosResponse {
         try await networkClient.request(
-            httpMethod: .GET,
-            stringUrl: "https://api.themoviedb.org/3/movie/\(movieId)/videos",
-            queryParams: ["language":iso3166LanguageCode(Locale.current)]
+            .get("https://api.themoviedb.org/3/movie/\(movieId)/videos"),
+            queryParams: [Param(name: "language", value: iso3166LanguageCode(Locale.current))]
         )
     }
     
     func getImages(movieId: Int) async throws -> ImagesResponse {
-        try await networkClient.request(
-            httpMethod: .GET,
-            stringUrl: "https://api.themoviedb.org/3/movie/\(movieId)/images"
-        )
+        try await networkClient.request(.get("https://api.themoviedb.org/3/movie/\(movieId)/images"))
     }
     
     func getCasts(movieId: Int) async throws -> CastsResponse {
         try await networkClient.request(
-            httpMethod: .GET,
-            stringUrl: "https://api.themoviedb.org/3/movie/\(movieId)/credits",
-            queryParams: ["language":iso3166LanguageCode(Locale.current)]
+            .get("https://api.themoviedb.org/3/movie/\(movieId)/credits"),
+            queryParams: [Param(name: "language", value: iso3166LanguageCode(Locale.current))]
         )
     }
 }

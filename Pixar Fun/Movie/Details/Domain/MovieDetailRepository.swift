@@ -11,13 +11,13 @@ protocol MovieDetailRepository {
     
     func getDetailsOfMovie(movieId: Int) async throws -> MovieDetails
     
-    func addToFavorites(accountId: Int, movieId: Int) async throws -> Bool
+    func addToFavorites(movieId: Int) async throws -> Bool
     
-    func removeToFavorites(accountId: Int, movieId: Int) async throws -> Bool
+    func removeToFavorites(movieId: Int) async throws -> Bool
     
-    func addToWatchLater(accountId: Int, movieId: Int) async throws -> Bool
+    func addToWatchLater(movieId: Int) async throws -> Bool
     
-    func removeToWatchLater(accountId: Int, movieId: Int) async throws -> Bool
+    func removeToWatchLater(movieId: Int) async throws -> Bool
     
     func getMovieStatus(movieId: Int) async throws -> MovieStatus
     

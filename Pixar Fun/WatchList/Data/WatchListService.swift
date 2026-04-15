@@ -21,12 +21,11 @@ class WatchListService: WatchListServiceProtocol {
     
     func fetchWatchListMovies(page: Int) async throws -> Page {
         try await networkClient.request(
-            httpMethod: .GET,
-            stringUrl: "https://api.themoviedb.org/3/account/\(Enviroment.accountId)/watchlist/movies",
+            .get("https://api.themoviedb.org/3/account/\(Environment.accountId)/watchlist/movies"),
             queryParams: [
-                "language":iso3166LanguageCode(Locale.current),
-                "page":"\(page)",
-                "sort_by":"created_at.asc",
+                Param(name: "language", value: iso3166LanguageCode(Locale.current)),
+                Param(name: "page", value: page),
+                Param(name: "sort_by", value: "created_at.asc"),
             ]
         )
     }

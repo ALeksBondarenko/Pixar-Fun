@@ -7,47 +7,48 @@
 
 import Foundation
 
-public typealias Headers = [String:String]
-public typealias QueryParameters = [String:Any]
-
-enum HttpMethod: String {
-    case GET = "GET"
-    case POST = "POST"
-}
-
 final class NetworkClient {
     
     private let connectionErrorMapper: ConnectionErrorMapper
     private let decoder = Decoder()
-    private let timeoutInterval = 15.0
-    private let defaultHeaders = [
-        "accept": "application/json",
-        "Authorization": "Bearer \(Enviroment.apiKey)"
+    private let defaultHeaders: [HttpHeader] = [
+        .accept(.json),
+        .authorization(.bearer(Environment.apiKey))
     ]
     
     init(connectionErrorMapper: ConnectionErrorMapper) {
         self.connectionErrorMapper = connectionErrorMapper
     }
     
-    func request<T>(httpMethod: HttpMethod, stringUrl: String, headers: Headers = [:], queryParams: QueryParameters = [:], body: Encodable? = nil) async throws -> T where T: Decodable {
-        let url = URL(string: stringUrl)!
-        var components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
-        components.queryItems = [URLQueryItem]()
-        for (key, value) in queryParams {
-            let queryItem = URLQueryItem(name: key, value: "\(value)")
-            components.queryItems?.append(queryItem)
+    func request<T>(
+        _ httpMethod: HttpMethod,
+        headers: [HttpHeader] = [],
+        queryParams: [Param] = [],
+        body: Encodable? = nil,
+        timeoutInterval: TimeInterval = 15,
+    ) async throws -> T where T: Decodable {
+        guard let url = URL(string: httpMethod.path) else {
+            throw ConnectionError.noUrl
         }
         
-        var request = URLRequest(url: components.url!)
-        request.httpMethod = httpMethod.rawValue
+        var components = URLComponents(url: url, resolvingAgainstBaseURL: true)
+        components?.queryItems = queryParams.map{ param in URLQueryItem(name: param.name, value: "\(param.value)")}
+        
+        guard let url = components?.url else {
+            throw ConnectionError.badUrl
+        }
+        
+        var request = URLRequest(url: url)
+        
+        request.httpMethod = httpMethod.name
         request.timeoutInterval = timeoutInterval
         
-        for (key, value) in defaultHeaders {
-            request.addValue(value, forHTTPHeaderField: key)
+        for header in defaultHeaders {
+            request.addValue(header.value, forHTTPHeaderField: header.key)
         }
         
-        for (key, value) in headers {
-            request.addValue(value, forHTTPHeaderField: key)
+        for header in headers {
+            request.addValue(header.value, forHTTPHeaderField: header.key)
         }
         
         if let body = body {
@@ -84,5 +85,4 @@ final class NetworkClient {
             throw ConnectionError.unknown
         }
     }
-    
 }
