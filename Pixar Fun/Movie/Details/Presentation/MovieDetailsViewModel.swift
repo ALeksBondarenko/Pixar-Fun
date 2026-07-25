@@ -9,62 +9,85 @@ import Combine
 
 class MovieDetailsViewModel: ViewModel {
     private let repository: MovieDetailRepository
+    private let authRepository: AuthRepository
     let movie: Movie
     @Published private(set) var state: MovieDetailsState = .loading
     @Published private(set) var title: String = ""
-    
-    init(repository: MovieDetailRepository, movie: Movie) {
+
+    init(repository: MovieDetailRepository, authRepository: AuthRepository, movie: Movie) {
         self.repository = repository
+        self.authRepository = authRepository
         self.movie = movie
         self.title = movie.title
     }
-    
+
     func requestDetails() {
         addTask { @MainActor in
             do {
                 let movieDetails = try await self.repository.getDetailsOfMovie(movieId: self.movie.id)
-                let status = try await self.repository.getMovieStatus(movieId: self.movie.id)
                 let videos = try await self.repository.getVideos(movieId: self.movie.id).filter( { $0.type == "Trailer" })
                 let images = try await self.repository.getImages(movieId: self.movie.id)
                 let casts = try await self.repository.getCast(movieId: self.movie.id)
-                self.state = .success(movieDetails, images, videos, casts, favorite: status.favorite, watchLater: status.watchlist)
+                let status = try await self.currentMovieStatus()
+                self.state = .success(movieDetails, images, videos, casts, favorite: status?.favorite ?? false, watchLater: status?.watchlist ?? false)
             } catch {
                 self.state = .failure(error)
             }
         }
     }
-    
+
+    private func currentMovieStatus() async throws -> MovieStatus? {
+        do {
+            return try await self.repository.getMovieStatus(movieId: self.movie.id)
+        } catch AuthError.notAuthenticated {
+            return nil
+        }
+    }
+
+    private func withAuthRetry<T>(_ operation: @Sendable () async throws -> T) async throws -> T {
+        do {
+            return try await operation()
+        } catch AuthError.notAuthenticated {
+            try await authRepository.login()
+            return try await operation()
+        }
+    }
+
     func toggleFavorites() {
         addTask { @MainActor in
+            guard case .success(let movie, let images, let videos, let casts, let favorite, let watchLater) = self.state else {
+                return
+            }
             do {
-                if case .success(let movie, let images, let videos, let casts, let favorite, let watchLater) = self.state {
-                    var isFvorite = favorite
-                    if isFvorite {
-                        isFvorite = try await !self.repository.removeToFavorites(movieId: self.movie.id)
+                let isFavorite = try await self.withAuthRetry {
+                    if favorite {
+                        return try await !self.repository.removeToFavorites(movieId: self.movie.id)
                     } else {
-                        isFvorite = try await self.repository.addToFavorites(movieId: self.movie.id)
+                        return try await self.repository.addToFavorites(movieId: self.movie.id)
                     }
-                    self.state = .success(movie, images, videos, casts, favorite: isFvorite, watchLater: watchLater)
                 }
+                self.state = .success(movie, images, videos, casts, favorite: isFavorite, watchLater: watchLater)
             } catch {
                 log(error.localizedDescription)
                 self.state = .failure(error)
             }
         }
     }
-    
+
     func toggleWatchLater() {
         addTask { @MainActor in
+            guard case .success(let movie, let images, let videos, let casts, let favorite, let watchLater) = self.state else {
+                return
+            }
             do {
-                if case .success(let movie, let images, let videos, let casts, let favorite, let watchLater) = self.state {
-                    var isWatchLater = watchLater
-                    if isWatchLater {
-                        isWatchLater = try await !self.repository.removeToWatchLater(movieId: self.movie.id)
+                let isWatchLater = try await self.withAuthRetry {
+                    if watchLater {
+                        return try await !self.repository.removeToWatchLater(movieId: self.movie.id)
                     } else {
-                        isWatchLater = try await self.repository.addToWatchLater(movieId: self.movie.id)
+                        return try await self.repository.addToWatchLater(movieId: self.movie.id)
                     }
-                    self.state = .success(movie, images, videos, casts, favorite: favorite, watchLater: isWatchLater)
                 }
+                self.state = .success(movie, images, videos, casts, favorite: favorite, watchLater: isWatchLater)
             } catch {
                 log(error.localizedDescription)
                 self.state = .failure(error)

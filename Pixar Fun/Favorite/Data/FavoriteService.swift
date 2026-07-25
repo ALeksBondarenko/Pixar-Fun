@@ -8,20 +8,20 @@
 import Foundation
 
 protocol FavoriteServiceProtocol {
-    
-    func fetchFavoriteMovies(page: Int) async throws -> Page
+
+    func fetchFavoriteMovies(accountId: Int, page: Int) async throws -> Page
 }
 
 class FavoriteService: FavoriteServiceProtocol {
     private let networkClient: NetworkClient
-    
+
     init(networkClient: NetworkClient) {
         self.networkClient = networkClient
     }
-    
-    func fetchFavoriteMovies(page: Int) async throws -> Page {
+
+    func fetchFavoriteMovies(accountId: Int, page: Int) async throws -> Page {
         try await networkClient.request(
-            .get("https://api.themoviedb.org/3/account/\(Environment.accountId)/favorite/movies"),
+            .get("https://api.themoviedb.org/3/account/\(accountId)/favorite/movies"),
             queryParams: [
                 Param(name: "language", value: iso3166LanguageCode(Locale.current)),
                 Param(name: "page", value: page),

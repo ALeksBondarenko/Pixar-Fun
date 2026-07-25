@@ -8,16 +8,23 @@
 import Foundation
 
 final class NetworkClient {
-    
+
     private let connectionErrorMapper: ConnectionErrorMapper
+    private let sessionTokenProvider: SessionTokenProvider
+    private let urlSession: URLSession
     private let decoder = Decoder()
-    private let defaultHeaders: [HttpHeader] = [
-        .accept(.json),
-        .authorization(.bearer(Environment.apiKey))
-    ]
-    
-    init(connectionErrorMapper: ConnectionErrorMapper) {
+
+    private var defaultHeaders: [HttpHeader] {
+        [
+            .accept(.json),
+            .authorization(.bearer(sessionTokenProvider.currentBearerToken()))
+        ]
+    }
+
+    init(connectionErrorMapper: ConnectionErrorMapper, sessionTokenProvider: SessionTokenProvider, urlSession: URLSession) {
         self.connectionErrorMapper = connectionErrorMapper
+        self.sessionTokenProvider = sessionTokenProvider
+        self.urlSession = urlSession
     }
     
     func request<T>(
@@ -32,7 +39,9 @@ final class NetworkClient {
         }
         
         var components = URLComponents(url: url, resolvingAgainstBaseURL: true)
-        components?.queryItems = queryParams.map{ param in URLQueryItem(name: param.name, value: "\(param.value)")}
+        if !queryParams.isEmpty {
+            components?.queryItems = queryParams.map{ param in URLQueryItem(name: param.name, value: "\(param.value)")}
+        }
         
         guard let url = components?.url else {
             throw ConnectionError.badUrl
@@ -44,11 +53,11 @@ final class NetworkClient {
         request.timeoutInterval = timeoutInterval
         
         for header in defaultHeaders {
-            request.addValue(header.value, forHTTPHeaderField: header.key)
+            request.setValue(header.value, forHTTPHeaderField: header.key)
         }
-        
+
         for header in headers {
-            request.addValue(header.value, forHTTPHeaderField: header.key)
+            request.setValue(header.value, forHTTPHeaderField: header.key)
         }
         
         if let body = body {
@@ -57,7 +66,7 @@ final class NetworkClient {
         logRequest(httpMethod: httpMethod, request: request)
         
         do {
-            let (data, response) = try await URLSession.shared.data(for: request)
+            let (data, response) = try await urlSession.data(for: request)
             
             logResponse(responce: response)
             

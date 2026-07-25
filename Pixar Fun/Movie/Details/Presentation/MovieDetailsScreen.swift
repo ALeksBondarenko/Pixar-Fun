@@ -233,12 +233,70 @@ fileprivate extension View {
 }
 
 #Preview {
-    MovieDetailsScreen(viewModel: MovieDetailsViewModel(repository: MovieDetailRepositoryImpl(service: MovieDetailsService(networkClient: NetworkClient(connectionErrorMapper: ConnectionErrorMapper()))), movie: Movie(id: 1022787, title: "Elio", overview: "overview", posterPath: "posterPath", releaseDate: Date())))
+    MovieDetailsScreen(viewModel: MovieDetailsViewModel(repository: MovieDetailRepositoryImpl(
+        service: MovieDetailsService(
+            networkClient: NetworkClient(
+                connectionErrorMapper: ConnectionErrorMapper(),
+                sessionTokenProvider: DefaultSessionTokenProvider(sessionStore: KeychainSessionStore()),
+                    urlSession: .shared
+            )
+        ),
+        authRepository: AuthRepositoryImpl(
+            service: AuthService(
+                networkClient: NetworkClient(
+                    connectionErrorMapper: ConnectionErrorMapper(),
+                    sessionTokenProvider: DefaultSessionTokenProvider(sessionStore: KeychainSessionStore()),
+                    urlSession: .shared
+                )
+            ),
+            sessionStore: KeychainSessionStore(),
+            webAuthPresenter: WebAuthPresenter()
+        )
+    ), authRepository: AuthRepositoryImpl(
+        service: AuthService(
+            networkClient: NetworkClient(
+                connectionErrorMapper: ConnectionErrorMapper(),
+                sessionTokenProvider: DefaultSessionTokenProvider(sessionStore: KeychainSessionStore()),
+                    urlSession: .shared
+            )
+        ),
+        sessionStore: KeychainSessionStore(),
+        webAuthPresenter: WebAuthPresenter()
+    ), movie: Movie(id: 1022787, title: "Elio", overview: "overview", posterPath: "posterPath", releaseDate: Date())))
         .environmentObject(Coordinator())
         .preferredColorScheme(ColorScheme.dark)
 }
 
 #Preview {
-    MovieDetailsScreen(viewModel: MovieDetailsViewModel(repository: MovieDetailRepositoryImpl(service: MovieDetailsService(networkClient: NetworkClient(connectionErrorMapper: ConnectionErrorMapper()))), movie: Movie(id: 1022787, title: "Elio", overview: "overview", posterPath: "posterPath", releaseDate: Date())))
+    MovieDetailsScreen(viewModel: MovieDetailsViewModel(repository: MovieDetailRepositoryImpl(
+        service: MovieDetailsService(
+            networkClient: NetworkClient(
+                connectionErrorMapper: ConnectionErrorMapper(),
+                sessionTokenProvider: DefaultSessionTokenProvider(sessionStore: KeychainSessionStore()),
+                    urlSession: .shared
+            )
+        ),
+        authRepository: AuthRepositoryImpl(
+            service: AuthService(
+                networkClient: NetworkClient(
+                    connectionErrorMapper: ConnectionErrorMapper(),
+                    sessionTokenProvider: DefaultSessionTokenProvider(sessionStore: KeychainSessionStore()),
+                    urlSession: .shared
+                )
+            ),
+            sessionStore: KeychainSessionStore(),
+            webAuthPresenter: WebAuthPresenter()
+        )
+    ), authRepository: AuthRepositoryImpl(
+        service: AuthService(
+            networkClient: NetworkClient(
+                connectionErrorMapper: ConnectionErrorMapper(),
+                sessionTokenProvider: DefaultSessionTokenProvider(sessionStore: KeychainSessionStore()),
+                    urlSession: .shared
+            )
+        ),
+        sessionStore: KeychainSessionStore(),
+        webAuthPresenter: WebAuthPresenter()
+    ), movie: Movie(id: 1022787, title: "Elio", overview: "overview", posterPath: "posterPath", releaseDate: Date())))
         .environmentObject(Coordinator())
 }

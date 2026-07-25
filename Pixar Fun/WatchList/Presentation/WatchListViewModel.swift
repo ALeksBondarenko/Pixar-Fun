@@ -9,22 +9,41 @@ import Foundation
 import Combine
 
 class WatchListViewModel: ViewModel {
-    
+
     private let repository: WatchListRepository
+    private let authRepository: AuthRepository
     @Published private(set) var state: WatchListState = .idle
-    
+
     private var movies: [Movie] = []
     private var currentPage: Int = 1
     private var maxPages: Int = 1
-    
-    init(repository: WatchListRepository) {
+
+    init(repository: WatchListRepository, authRepository: AuthRepository) {
         self.repository = repository
+        self.authRepository = authRepository
     }
-    
+
     func fetchMovies() {
+        guard authRepository.isLoggedIn else {
+            state = .unauthenticated
+            return
+        }
         if case .idle = state {
             state = .loading
             fetchPage(nextPage: currentPage)
+        }
+    }
+
+    func login() {
+        addTask { @MainActor in
+            do {
+                try await self.authRepository.login()
+                self.state = .idle
+                self.fetchMovies()
+            } catch {
+                log(error.localizedDescription)
+                self.state = .unauthenticated
+            }
         }
     }
     

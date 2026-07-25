@@ -28,6 +28,8 @@ struct WatchListScreen: View {
                 )
             case .error(let error):
                 ErrorView(error: error, onRetry: viewModel.reloadLastPage, onCancel: coordinator.pop)
+            case .unauthenticated:
+                LoginPromptView(login: viewModel.login)
             }
         }.onAppear {
             viewModel.fetchMovies()
@@ -36,13 +38,36 @@ struct WatchListScreen: View {
             viewModel.cancelAllTasks()
         }
     }
-    
+
     @ViewBuilder
     func EmptyMoviesView() -> some View {
         ZStack(alignment: .center) {
             Text("emptyWatchList")
                 .font(.body)
         }
+    }
+
+    @ViewBuilder
+    func LoginPromptView(login: @escaping () -> Void) -> some View {
+        VStack(spacing: 16) {
+            Text("loginPromptMessage")
+                .font(.body)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+
+            Button {
+                login()
+            } label: {
+                Text("loginPromptButton")
+                    .font(.headline)
+                    .foregroundStyle(.white)
+                    .padding(.horizontal)
+                    .padding(.vertical, 8)
+                    .background(Color("PrimaryButtonColor"))
+                    .cornerRadius(12)
+            }
+        }
+        .padding()
     }
     
     @ViewBuilder

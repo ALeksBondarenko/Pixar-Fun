@@ -9,22 +9,41 @@ import Foundation
 import Combine
 
 class FavotireMoviesViewModel: ViewModel {
-    
+
     private let repository: FavoriteRepository
+    private let authRepository: AuthRepository
     @Published private(set) var state: FavotireMoviesState = .idle
-    
+
     private var movies: [Movie] = []
     private var currentPage: Int = 1
     private var maxPages: Int = 1
-    
-    init(repository: FavoriteRepository) {
+
+    init(repository: FavoriteRepository, authRepository: AuthRepository) {
         self.repository = repository
+        self.authRepository = authRepository
     }
-    
+
     func fetchFavotireMovies() {
+        guard authRepository.isLoggedIn else {
+            state = .unauthenticated
+            return
+        }
         if case .idle = state {
             state = .loading
             fetchPage(nextPage: currentPage)
+        }
+    }
+
+    func login() {
+        addTask { @MainActor in
+            do {
+                try await self.authRepository.login()
+                self.state = .idle
+                self.fetchFavotireMovies()
+            } catch {
+                log(error.localizedDescription)
+                self.state = .unauthenticated
+            }
         }
     }
     

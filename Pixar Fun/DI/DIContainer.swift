@@ -5,6 +5,7 @@
 //  Created by Александр Бондаренко on 14.02.2026.
 //
 
+import Foundation
 import Swinject
 import SwinjectAutoregistration
 
@@ -24,11 +25,47 @@ final class DIContainer {
         container
             .autoregister(ConnectionErrorMapper.self, initializer: ConnectionErrorMapper.init)
             .inObjectScope(.container)
-        
+
+        container
+            .register(SessionStore.self) { _ in KeychainSessionStore() }
+            .inObjectScope(.container)
+
+        container
+            .autoregister(SessionTokenProvider.self, initializer: DefaultSessionTokenProvider.init)
+            .inObjectScope(.container)
+
+        container
+            .register(URLSession.self) { _ in URLSession.shared }
+            .inObjectScope(.container)
+
         container
             .autoregister(NetworkClient.self, initializer: NetworkClient.init)
             .inObjectScope(.container)
-        
+
+        container
+            .autoregister(WebAuthPresenter.self, initializer: WebAuthPresenter.init)
+            .inObjectScope(.container)
+
+        container
+            .register(WebAuthPresenting.self) { resolver in
+                resolver.resolve(WebAuthPresenter.self)!
+            }
+            .inObjectScope(.container)
+
+        container
+            .autoregister(AuthService.self, initializer: AuthService.init)
+            .inObjectScope(.container)
+
+        container
+            .register(AuthServiceProtocol.self) { resolver in
+                resolver.resolve(AuthService.self)!
+            }
+            .inObjectScope(.container)
+
+        container
+            .autoregister(AuthRepository.self, initializer: AuthRepositoryImpl.init)
+            .inObjectScope(.container)
+
         container
             .autoregister(PersonService.self, initializer: PersonService.init)
             .inObjectScope(.container)

@@ -147,6 +147,7 @@ private extension Error {
         switch self {
         case let connectionError as ConnectionError: mapConnestionErrorToString(connectionError)
         case let apiError as ApiError: mapApiErrorToString(apiError)
+        case is AuthError: String(localized: "notAuthenticated")
         default: "unknown"
         }
     }
@@ -182,6 +183,7 @@ fileprivate extension Error {
     var isRetryable: Bool {
         switch self {
         case is ConnectionError: return true
+        case is AuthError: return true
         default: return false
         }
     }

@@ -94,9 +94,9 @@ Secrets.xcconfig
 and add:
 
 API_KEY = YOUR_API_KEY
-
-ACCOUNT_ID = YOUR_ACCOUNT_ID
 ```
+
+4. Favorites and watch list require signing in with your TMDB account (Favorite/WatchList tabs prompt to log in via TMDB when needed) — no extra setup needed for that beyond the API key above.
 
 4. Run the project on a simulator or device.
 

@@ -67,7 +67,11 @@ struct MoviesScreen: View {
     MoviesScreen(viewModel: MoviesViewModel(
         repository: MoviesRepositoryImpl(
             service: MoviesService(
-                networkClient: NetworkClient(connectionErrorMapper: ConnectionErrorMapper())
+                networkClient: NetworkClient(
+                        connectionErrorMapper: ConnectionErrorMapper(),
+                        sessionTokenProvider: DefaultSessionTokenProvider(sessionStore: KeychainSessionStore()),
+                        urlSession: .shared
+                    )
             )
         )
     ))
@@ -80,7 +84,11 @@ struct MoviesScreen: View {
     MoviesScreen(viewModel: MoviesViewModel(
         repository: MoviesRepositoryImpl(
             service: MoviesService(
-                networkClient: NetworkClient(connectionErrorMapper: ConnectionErrorMapper())
+                networkClient: NetworkClient(
+                        connectionErrorMapper: ConnectionErrorMapper(),
+                        sessionTokenProvider: DefaultSessionTokenProvider(sessionStore: KeychainSessionStore()),
+                        urlSession: .shared
+                    )
             )
         )
     ))

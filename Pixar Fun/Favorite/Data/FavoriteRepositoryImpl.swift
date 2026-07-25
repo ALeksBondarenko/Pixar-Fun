@@ -8,14 +8,19 @@
 import Foundation
 
 class FavoriteRepositoryImpl: FavoriteRepository {
-    
+
     private let service: FavoriteServiceProtocol
-    
-    init(service: FavoriteServiceProtocol) {
+    private let authRepository: AuthRepository
+
+    init(service: FavoriteServiceProtocol, authRepository: AuthRepository) {
         self.service = service
+        self.authRepository = authRepository
     }
-    
+
     func fetchFavoriteMovies(page: Int) async throws -> Page {
-        try await service.fetchFavoriteMovies(page: page)
+        guard let accountId = authRepository.currentAccountId() else {
+            throw AuthError.notAuthenticated
+        }
+        return try await service.fetchFavoriteMovies(accountId: accountId, page: page)
     }
 }

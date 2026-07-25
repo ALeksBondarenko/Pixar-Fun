@@ -10,27 +10,19 @@ import Foundation
 public enum Environment {
     enum Keys {
         static let apiKey = "API_KEY"
-        static let accountId = "ACCOUNT_ID"
     }
-    
+
     private static let infoDictionary: [String: Any] = {
         guard let dict = Bundle.main.infoDictionary else {
             fatalError("plist file not found")
         }
         return dict
     }()
-    
+
     static let apiKey: String = {
         guard let apiKey = Environment.infoDictionary[Keys.apiKey] as? String else {
             fatalError("API key not found in plist file")
         }
         return apiKey
-    }()
-    
-    static let accountId: Int = {
-        guard let accountId = Environment.infoDictionary[Keys.accountId] as? String else {
-            fatalError("Account ID not found in plist file")
-        }
-        return Int(accountId)!
     }()
 }

@@ -138,6 +138,10 @@ fileprivate struct TruncatedTextRender: TextRenderer {
 }
 
 #Preview {
-    PersonScreen(viewModel: PersonViewModel(repository: PersonRepositoryImpl(service: PersonService(networkClient: NetworkClient(connectionErrorMapper: ConnectionErrorMapper()))), cast: Cast(id: 16828, character: "Buzz Lightyear (voice)", name: "Chris Evans", profilePath: "/3bOGNsHlrswhyW79uvIHH1V43JI.jpg")))
+    PersonScreen(viewModel: PersonViewModel(repository: PersonRepositoryImpl(service: PersonService(networkClient: NetworkClient(
+        connectionErrorMapper: ConnectionErrorMapper(),
+        sessionTokenProvider: DefaultSessionTokenProvider(sessionStore: KeychainSessionStore()),
+        urlSession: .shared
+    ))), cast: Cast(id: 16828, character: "Buzz Lightyear (voice)", name: "Chris Evans", profilePath: "/3bOGNsHlrswhyW79uvIHH1V43JI.jpg")))
         .environmentObject(Coordinator())
 }

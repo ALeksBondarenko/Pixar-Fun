@@ -8,20 +8,20 @@
 import Foundation
 
 protocol WatchListServiceProtocol {
-    
-    func fetchWatchListMovies(page: Int) async throws -> Page
+
+    func fetchWatchListMovies(accountId: Int, page: Int) async throws -> Page
 }
 
 class WatchListService: WatchListServiceProtocol {
     private let networkClient: NetworkClient
-    
+
     init(networkClient: NetworkClient) {
         self.networkClient = networkClient
     }
-    
-    func fetchWatchListMovies(page: Int) async throws -> Page {
+
+    func fetchWatchListMovies(accountId: Int, page: Int) async throws -> Page {
         try await networkClient.request(
-            .get("https://api.themoviedb.org/3/account/\(Environment.accountId)/watchlist/movies"),
+            .get("https://api.themoviedb.org/3/account/\(accountId)/watchlist/movies"),
             queryParams: [
                 Param(name: "language", value: iso3166LanguageCode(Locale.current)),
                 Param(name: "page", value: page),

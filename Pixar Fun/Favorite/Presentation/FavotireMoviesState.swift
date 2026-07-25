@@ -13,4 +13,5 @@ enum FavotireMoviesState {
     case empty
     case content([Movie])
     case error(Error)
+    case unauthenticated
 }

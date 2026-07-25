@@ -27,6 +27,8 @@ struct FavotireMoviesScreen: View {
                 )
             case .error(let error):
                 ErrorView(error: error, onRetry: viewModel.reloadLastPage, onCancel: coordinator.pop)
+            case .unauthenticated:
+                LoginPromptView(login: viewModel.login)
             }
         }.onAppear {
             viewModel.fetchFavotireMovies()
@@ -35,13 +37,36 @@ struct FavotireMoviesScreen: View {
             viewModel.cancelAllTasks()
         }
     }
-    
+
     @ViewBuilder
     func EmptyMoviesView() -> some View {
         ZStack(alignment: .center) {
             Text("emptyFavorites")
-                .font(.title)
+                .font(.body)
         }
+    }
+
+    @ViewBuilder
+    func LoginPromptView(login: @escaping () -> Void) -> some View {
+        VStack(spacing: 16) {
+            Text("loginPromptMessage")
+                .font(.body)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+
+            Button {
+                login()
+            } label: {
+                Text("loginPromptButton")
+                    .font(.headline)
+                    .foregroundStyle(.white)
+                    .padding(.horizontal)
+                    .padding(.vertical, 8)
+                    .background(Color("PrimaryButtonColor"))
+                    .cornerRadius(12)
+            }
+        }
+        .padding()
     }
     
     @ViewBuilder
@@ -72,10 +97,38 @@ struct FavotireMoviesScreen: View {
 }
 
 #Preview {
-    FavotireMoviesScreen(viewModel: FavotireMoviesViewModel(repository: FavoriteRepositoryImpl(
+    FavotireMoviesScreen(viewModel: FavotireMoviesViewModel(
+        repository: FavoriteRepositoryImpl(
             service: FavoriteService(
-                networkClient: NetworkClient(connectionErrorMapper: ConnectionErrorMapper())
+                networkClient: NetworkClient(
+                    connectionErrorMapper: ConnectionErrorMapper(),
+                    sessionTokenProvider: DefaultSessionTokenProvider(sessionStore: KeychainSessionStore()),
+                    urlSession: .shared
+                )
+            ),
+            authRepository: AuthRepositoryImpl(
+                service: AuthService(
+                    networkClient: NetworkClient(
+                        connectionErrorMapper: ConnectionErrorMapper(),
+                        sessionTokenProvider: DefaultSessionTokenProvider(sessionStore: KeychainSessionStore()),
+                    urlSession: .shared
+                    )
+                ),
+                sessionStore: KeychainSessionStore(),
+                webAuthPresenter: WebAuthPresenter()
             )
-        )))
+        ),
+        authRepository: AuthRepositoryImpl(
+            service: AuthService(
+                networkClient: NetworkClient(
+                    connectionErrorMapper: ConnectionErrorMapper(),
+                    sessionTokenProvider: DefaultSessionTokenProvider(sessionStore: KeychainSessionStore()),
+                    urlSession: .shared
+                )
+            ),
+            sessionStore: KeychainSessionStore(),
+            webAuthPresenter: WebAuthPresenter()
+        )
+    ))
         .environmentObject(Coordinator())
 }

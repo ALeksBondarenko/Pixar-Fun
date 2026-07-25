@@ -8,36 +8,50 @@
 import Foundation
 
 final class MovieDetailRepositoryImpl: MovieDetailRepository {
-    
+
     private let service: MovieDetailsServiceProtocol
-    
-    init(service: MovieDetailsServiceProtocol) {
+    private let authRepository: AuthRepository
+
+    init(service: MovieDetailsServiceProtocol, authRepository: AuthRepository) {
         self.service = service
+        self.authRepository = authRepository
     }
-    
+
     func getDetailsOfMovie(movieId: Int) async throws -> MovieDetails {
         try await service.getDetails(movieId: movieId)
     }
-    
+
     func addToFavorites(movieId: Int) async throws -> Bool {
-        try await service.changeFavoriteList(accountId: Environment.accountId, request: FavoriteRequest(mediaId: movieId, favorite: true)).success
+        let accountId = try requireAccountId()
+        return try await service.changeFavoriteList(accountId: accountId, request: FavoriteRequest(mediaId: movieId, favorite: true)).success
     }
-    
+
     func removeToFavorites(movieId: Int) async throws -> Bool {
-        try await service.changeFavoriteList(accountId: Environment.accountId, request: FavoriteRequest(mediaId: movieId, favorite: false)).success
+        let accountId = try requireAccountId()
+        return try await service.changeFavoriteList(accountId: accountId, request: FavoriteRequest(mediaId: movieId, favorite: false)).success
     }
-    
+
     func addToWatchLater(movieId: Int) async throws -> Bool {
-        try await service.changeWatchLater(accountId: Environment.accountId, request: WachListRequest(mediaId: movieId, watchlist: true)).success
+        let accountId = try requireAccountId()
+        return try await service.changeWatchLater(accountId: accountId, request: WachListRequest(mediaId: movieId, watchlist: true)).success
     }
-    
+
     func removeToWatchLater(movieId: Int) async throws -> Bool {
-        try await service.changeWatchLater(accountId: Environment.accountId, request: WachListRequest(mediaId: movieId, watchlist: false)).success
+        let accountId = try requireAccountId()
+        return try await service.changeWatchLater(accountId: accountId, request: WachListRequest(mediaId: movieId, watchlist: false)).success
     }
-    
-    
+
+
     func getMovieStatus(movieId: Int) async throws -> MovieStatus {
-        try await service.getStatus(movieId: movieId)
+        _ = try requireAccountId()
+        return try await service.getStatus(movieId: movieId)
+    }
+
+    private func requireAccountId() throws -> Int {
+        guard let accountId = authRepository.currentAccountId() else {
+            throw AuthError.notAuthenticated
+        }
+        return accountId
     }
     
     func getImages(movieId: Int) async throws -> [Frame] {
