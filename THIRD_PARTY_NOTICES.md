@@ -12,16 +12,6 @@ and terms of their respective owners.
 For information about TMDB API terms and attribution requirements, refer to
 the official TMDB developer documentation.
 
-## Pixar and Disney
-
-Pixar, Disney, movie titles, character names, character designs, posters,
-images, and related properties are trademarks or copyrighted works of their
-respective owners.
-
-This repository is an independent, non-commercial educational and portfolio
-project. It is not affiliated with, sponsored by, or endorsed by Pixar
-Animation Studios or The Walt Disney Company.
-
 ## Apple and Other Platforms
 
 Apple, iOS, Xcode, Swift, and related names may be trademarks of Apple Inc.
