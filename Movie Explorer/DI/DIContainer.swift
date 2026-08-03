@@ -148,11 +148,25 @@ final class DIContainer {
         container
             .autoregister(MoviesRepository.self, initializer: MoviesRepositoryImpl.init)
             .inObjectScope(.container)
-        
+
         container
             .autoregister(MoviesViewModel.self, initializer: MoviesViewModel.init)
             .inObjectScope(.transient)
-        
+
+        container
+            .autoregister(SearchService.self, initializer: SearchService.init)
+            .inObjectScope(.container)
+
+        container
+            .register(SearchServiceProtocol.self) { resolver in
+                resolver.resolve(SearchService.self)!
+            }
+            .inObjectScope(.container)
+
+        container
+            .autoregister(SearchRepository.self, initializer: SearchRepositoryImpl.init)
+            .inObjectScope(.container)
+
         container
             .autoregister(SearchViewModel.self, initializer: SearchViewModel.init)
             .inObjectScope(.transient)

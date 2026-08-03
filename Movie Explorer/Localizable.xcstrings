@@ -516,13 +516,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Search movies"
+            "value": "Search"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Поиск фильмов"
+            "value": "Поиск"
           }
         }
       }
@@ -736,6 +736,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "Документация разработчика TMDB"
+          }
+        }
+      }
+    },
+    "suggestions": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suggestions"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подсказки"
+          }
+        }
+      }
+    },
+    "people": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "People"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Персоны"
+          }
+        }
+      }
+    },
+    "loadFailed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed to load"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось загрузить"
           }
         }
       }
