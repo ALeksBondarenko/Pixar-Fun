@@ -18,7 +18,13 @@ struct PersonScreen: View {
             case .loading:
                 FullScreenProgressView()
             case .content(let person, let photos, let movies):
-                PersonView(person: person, photos: photos, movies: movies)
+                PersonView(
+                    person: person,
+                    photos: photos,
+                    movies: movies,
+                    refresh: viewModel.load,
+                    loadNextMoviePage: viewModel.loadNextMoviePage,
+                )
             case .error(let error):
                 ErrorView(error: error, onRetry: viewModel.load, onCancel: coordinator.pop)
             }
@@ -32,9 +38,15 @@ struct PersonScreen: View {
     }
     
     @ViewBuilder
-    func PersonView(person: Person, photos: [PersonImage], movies: [Movie]) -> some View {
+    func PersonView(
+        person: Person,
+        photos: [PersonImage],
+        movies: [Movie],
+        refresh: @escaping @Sendable () -> Void,
+        loadNextMoviePage: @escaping @Sendable () -> Void,
+    ) -> some View {
         ScrollView(.vertical, showsIndicators: false) {
-            VStack(alignment: .leading){
+            VStack(alignment: .leading) {
                 Header(person: person)
                     .padding(.horizontal)
                 
@@ -70,6 +82,11 @@ struct PersonScreen: View {
                     LazyHStack(spacing: 12) {
                         ForEach(movies, id: \.id) { movie in
                             PosterView(movie: movie)
+                                .onAppear {
+                                    if movie == movies.last {
+                                        loadNextMoviePage()
+                                    }
+                                }
                                 .onTapGesture {
                                     coordinator.route(destination: .details(movie))
                                 }
@@ -78,13 +95,15 @@ struct PersonScreen: View {
                     .padding(.horizontal, 15)
                 }
             }
+        }.refreshable {
+            refresh()
         }
     }
     
     @ViewBuilder
     func Header(person: Person)  -> some View {
         HStack(alignment: .top) {
-            AsyncImage(url: URL(string: "https://image.tmdb.org/t/p/w500\(person.profilePath)")) { image in
+            AsyncImage(url: URL(string: "https://image.tmdb.org/t/p/w500\(person.profilePath ?? "" )")) { image in
                 image.resizable()
             } placeholder: {
                 ProgressView()
@@ -99,9 +118,11 @@ struct PersonScreen: View {
                     .font(.title.bold())
                     .frame(maxWidth: .infinity, alignment: .leading)
                 
-                Text(person.placeOfBirth)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                if let placeOfBirth = person.placeOfBirth {
+                    Text(placeOfBirth)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
                 
                 if let birthday = person.birthday {
                     Text(birthday, style: .date)

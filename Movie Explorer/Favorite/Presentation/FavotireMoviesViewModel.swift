@@ -69,6 +69,7 @@ class FavotireMoviesViewModel: ViewModel {
     }
     
     private func fetchPage(nextPage: Int) {
+        cancelAllTasks()
         addTask { @MainActor in
             do {
                 let page = try await self.repository.fetchFavoriteMovies(page: self.currentPage)
@@ -80,6 +81,10 @@ class FavotireMoviesViewModel: ViewModel {
                 } else {
                     self.state = .content(self.movies)
                 }
+            } catch is CancellationError {
+                return
+            } catch let urlError as URLError where urlError.code == .cancelled {
+                return
             } catch {
                 log(error.localizedDescription)
                 self.state = .error(error)

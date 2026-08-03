@@ -24,11 +24,13 @@ class MovieDetailsViewModel: ViewModel {
     func requestDetails() {
         addTask { @MainActor in
             do {
-                let movieDetails = try await self.repository.getDetailsOfMovie(movieId: self.movie.id)
-                let videos = try await self.repository.getVideos(movieId: self.movie.id).filter( { $0.type == "Trailer" })
-                let images = try await self.repository.getImages(movieId: self.movie.id)
-                let casts = try await self.repository.getCast(movieId: self.movie.id)
-                let status = try await self.currentMovieStatus()
+                async let detailsResult = self.repository.getDetailsOfMovie(movieId: self.movie.id)
+                async let videosResult = self.repository.getVideos(movieId: self.movie.id)
+                async let imagesResult = self.repository.getImages(movieId: self.movie.id)
+                async let castsResult = self.repository.getCast(movieId: self.movie.id)
+                async let statusResult = self.currentMovieStatus()
+
+                let (movieDetails, videos, images, casts, status) = try await (detailsResult, videosResult, imagesResult, castsResult, statusResult)
                 self.state = .success(movieDetails, images, videos, casts, favorite: status?.favorite ?? false, watchLater: status?.watchlist ?? false)
             } catch {
                 self.state = .failure(error)

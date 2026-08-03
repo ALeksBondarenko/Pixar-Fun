@@ -17,11 +17,12 @@ struct PosterView: View {
             Text(movie.title)
                 .font(.body.bold())
                 .padding(.bottom)
+                .frame(width: 164)
                 .lineLimit(1)
         }
     }
 }
 
 #Preview {
-    PosterView(movie: Movie(id: 1327819, title: "Hoppers", overview: "", posterPath: "/12tvpCv413QvvJlZGf4lRq446tT.jpg", releaseDate: Date()))
+    PosterView(movie: Movie(id: 1327819, title: "Some new film with long title", overview: "", posterPath: nil, releaseDate: Date()))
 }

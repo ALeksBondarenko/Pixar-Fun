@@ -42,9 +42,7 @@ class PersonService: PersonServiceProtocol {
                 Param(name: "language", value: iso3166LanguageCode(Locale.current)),
                 Param(name: "page", value: page),
                 Param(name: "sort_by", value: "primary_release_date.desc"),
-                Param(name: "with_companies", value: "3"),
                 Param(name: "with_cast", value: personId),
-                Param(name: "with_genres", value: "16"),
             ]
         )
     }

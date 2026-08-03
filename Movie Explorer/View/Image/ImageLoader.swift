@@ -37,6 +37,10 @@ final class ImageLoader: ObservableObject {
                         cache.setImage(uiImage, for: url)
                         self.imageState = .loaded(uiImage)
                     }
+                } catch is CancellationError {
+                    return
+                } catch let urlError as URLError where urlError.code == .cancelled {
+                    return
                 } catch {
                     self.imageState = .failed(error)
                 }

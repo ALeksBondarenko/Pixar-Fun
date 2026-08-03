@@ -17,7 +17,7 @@ class MoviesRepositoryImpl: MoviesRepository {
     }
     
     func fetchMovies(page: Int) async throws -> Page {
-        try await service.fetchMovies(page: page, genre: nil)
+        try await service.fetchMovies(page: page)
     }
     
     func fetchMovies(page: Int, genre: Genres) async throws -> Page {

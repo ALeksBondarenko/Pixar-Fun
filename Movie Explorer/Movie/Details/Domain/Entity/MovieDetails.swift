@@ -16,7 +16,7 @@ struct MovieDetails: Hashable, Codable {
     let revenue: Int
     let status: String
     let releaseDate: Date
-    let backdropPath: String
+    let backdropPath: String?
     let posterPath: String?
     let voteAverage: Double
 

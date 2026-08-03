@@ -14,7 +14,6 @@ class WatchListViewModel: ViewModel {
     private let authRepository: AuthRepository
     @Published private(set) var state: WatchListState = .idle
 
-    private var movies: [Movie] = []
     private var currentPage: Int = 1
     private var maxPages: Int = 1
 
@@ -48,18 +47,13 @@ class WatchListViewModel: ViewModel {
     }
     
     func refreshMovies() {
-        movies.removeAll()
-        currentPage = 1
         state = .loading
-        fetchPage(nextPage: currentPage)
+        fetchPage(nextPage: 1)
     }
     
     func fetchMoreMovies() {
-        if currentPage >= maxPages {
-            return
-        }
-        currentPage = currentPage + 1
-        fetchPage(nextPage: currentPage)
+        guard currentPage < maxPages else { return }
+        fetchPage(nextPage: currentPage + 1)
     }
     
     func reloadLastPage() {
@@ -68,18 +62,23 @@ class WatchListViewModel: ViewModel {
         }
     }
     
-    private func fetchPage(nextPage: Int) {
+    private func fetchPage(movies: [Movie] = [], nextPage: Int) {
+        cancelAllTasks()
         addTask { @MainActor in
             do {
                 let page = try await self.repository.fetchMovies(page: self.currentPage)
-                self.movies = self.movies + page.results
                 self.currentPage = page.page ?? 0
-                self.maxPages = page.totalPages
-                if self.movies.isEmpty {
+                self.maxPages = page.totalPages 
+                let movies = movies + page.results
+                if movies.isEmpty {
                     self.state = .empty
                 } else {
-                    self.state = .content(self.movies)
+                    self.state = .content(movies)
                 }
+            } catch is CancellationError {
+                return
+            } catch let urlError as URLError where urlError.code == .cancelled {
+                return
             } catch {
                 log(error.localizedDescription)
                 self.state = .error(error)

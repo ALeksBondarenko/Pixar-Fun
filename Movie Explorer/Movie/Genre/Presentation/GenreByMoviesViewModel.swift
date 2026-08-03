@@ -8,14 +8,13 @@
 import Foundation
 import Combine
 
-class GenreByMoviesViewModel: ViewModel {
+final class GenreByMoviesViewModel: ViewModel {
     private let repository: MoviesRepository
     private let genre: Genres
     
     @Published private(set) var state: GenreByMoviesState = .idle
     @Published private(set) var title: String = ""
     
-    private var movies: [Movie] = []
     private var currentPage: Int = 1
     private var maxPages: Int = 1
     
@@ -33,38 +32,37 @@ class GenreByMoviesViewModel: ViewModel {
     }
     
     func refreshMovies() {
-        movies.removeAll()
-        currentPage = 1
         state = .loading
-        fetchPage(nextPage: currentPage)
+        fetchPage(nextPage: 1)
     }
     
     func fetchMoreMovies() {
-        if currentPage >= maxPages {
-            return
-        }
-        currentPage = currentPage + 1
-        fetchPage(nextPage: currentPage)
+        guard currentPage < maxPages else { return }
+        guard case .content(let movies, _) = state else { return }
+        fetchPage(movies: movies, nextPage: currentPage + 1)
     }
     
     func clearError() {
-        if case .content = self.state {
-            self.state = .content(self.movies, nil)
+        if case .content(let movies, _) = self.state {
+            self.state = .content(movies, nil)
         }
     }
     
-    private func fetchPage(nextPage: Int) {
+    private func fetchPage(movies: [Movie] = [], nextPage: Int) {
         cancelAllTasks()
         addTask { @MainActor in
             do {
-                let page = try await self.repository.fetchMovies(page: nextPage)
-                self.movies = self.movies + page.results
+                let page = try await self.repository.fetchMovies(page: nextPage, genre: self.genre)
                 self.currentPage = page.page ?? 0
                 self.maxPages = page.totalPages
-                self.state = .content(self.movies, nil)
+                self.state = .content(movies + page.results, nil)
+            } catch is CancellationError {
+                return
+            } catch let urlError as URLError where urlError.code == .cancelled {
+                return
             } catch {
                 log(error.localizedDescription)
-                self.state = .content(self.movies, error)
+                self.state = .content(movies, error)
             }
         }
     }

@@ -62,7 +62,7 @@ struct MovieDetailsScreen: View {
     ) -> some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(alignment: .leading) {
-                Header(movieDetails: movieDetails)
+                Header(movieDetails: movieDetails, image: images.first)
 
                 ScrollView(.horizontal, showsIndicators: false) {
                     LazyHStack {
@@ -133,7 +133,7 @@ struct MovieDetailsScreen: View {
 
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 10) {
-                            ForEach(casts, id: \.name) { cast in
+                            ForEach(casts, id: \.id) { cast in
                                 PersonView(cast: cast)
                                     .onTapGesture {
                                         coordinator.route(
@@ -185,19 +185,31 @@ struct MovieDetailsScreen: View {
     }
 
     @ViewBuilder
-    func Header(movieDetails: MovieDetails) -> some View {
+    func Header(movieDetails: MovieDetails, image: Frame?) -> some View {
         ZStack(alignment: .leading) {
             CachedAsyncImage(
                 url: URL(
                     string:
-                        "https://image.tmdb.org/t/p/original\(movieDetails.backdropPath)"
+                        "https://image.tmdb.org/t/p/original\(movieDetails.backdropPath ?? image?.filePath ?? "")"
                 )
             ) { image in
                 image.resizable()
             } placeholder: {
-                ProgressView()
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        Color.clear, Color("AlertBackground"),
+                    ]),
+                    startPoint: .bottom,
+                    endPoint: .top
+                )
             } failure: { _ in
-                ProgressView()
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        Color.clear, Color("AlertBackground"),
+                    ]),
+                    startPoint: .bottom,
+                    endPoint: .top
+                )
             }
             .aspectRatio(contentMode: .fit)
             .overlay {
