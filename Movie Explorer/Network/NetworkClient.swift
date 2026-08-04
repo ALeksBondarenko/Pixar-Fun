@@ -67,14 +67,14 @@ final class NetworkClient {
         
         do {
             let (data, response) = try await urlSession.data(for: request)
-            
-            logResponse(responce: response)
-            
+
+            logResponse(response)
+            logBody(data)
+
             if let httpResponse = response as? HTTPURLResponse {
                 switch httpResponse.statusCode {
                 case 200...299:
                     let parsedDate: T = try decoder.decode(data)
-                    logData(data: parsedDate)
                     return parsedDate
                 case 401:
                     throw ApiError.invalidAPIKey
@@ -87,10 +87,10 @@ final class NetworkClient {
             
             throw ConnectionError.unknown
         } catch let error as URLError {
-            log(error.localizedDescription)
+            log(error)
             throw connectionErrorMapper.map(error)
         } catch {
-            log(error.localizedDescription)
+            log(error)
             throw ConnectionError.unknown
         }
     }

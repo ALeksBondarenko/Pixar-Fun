@@ -167,7 +167,7 @@ class SearchViewModel: ViewModel {
             && content.suggestions.initialError != nil
 
         if allFailed, let error = content.movies.initialError {
-            log(error.localizedDescription)
+            log(error)
             state = .error(error)
         } else {
             state = .content(content)
@@ -235,7 +235,7 @@ class SearchViewModel: ViewModel {
         error: Error
     ) {
         guard token == requestToken, case .content(var content) = state else { return }
-        log(error.localizedDescription)
+        log(error)
         content[keyPath: keyPath].isLoadingNextPage = false
         content[keyPath: keyPath].pageError = error
         state = .content(content)
@@ -288,7 +288,7 @@ class SearchViewModel: ViewModel {
         error: Error
     ) {
         guard token == requestToken, case .content(var content) = state else { return }
-        log(error.localizedDescription)
+        log(error)
         content[keyPath: keyPath].isLoadingNextPage = false
         content[keyPath: keyPath].initialError = error
         state = .content(content)

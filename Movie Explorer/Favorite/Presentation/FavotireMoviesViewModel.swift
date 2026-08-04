@@ -41,7 +41,7 @@ class FavotireMoviesViewModel: ViewModel {
                 self.state = .idle
                 self.fetchFavotireMovies()
             } catch {
-                log(error.localizedDescription)
+                log(error)
                 self.state = .unauthenticated
             }
         }
@@ -89,7 +89,7 @@ class FavotireMoviesViewModel: ViewModel {
             } catch let urlError as URLError where urlError.code == .cancelled {
                 return
             } catch {
-                log(error.localizedDescription)
+                log(error)
                 self.state = .content(movies, error)
             }
         }

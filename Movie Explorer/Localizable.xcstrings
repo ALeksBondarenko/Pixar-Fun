@@ -790,6 +790,23 @@
           }
         }
       }
+    },
+    "posterUnavailable" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poster unavailable"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Постер недоступен"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

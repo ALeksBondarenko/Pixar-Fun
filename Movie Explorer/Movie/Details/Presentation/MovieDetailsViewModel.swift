@@ -77,7 +77,7 @@ class MovieDetailsViewModel: ViewModel {
                 }
                 self.state = .success(movie, images, videos, casts, favorite: isFavorite, watchLater: watchLater)
             } catch {
-                log(error.localizedDescription)
+                log(error)
                 self.state = .failure(error)
             }
         }
@@ -98,7 +98,7 @@ class MovieDetailsViewModel: ViewModel {
                 }
                 self.state = .success(movie, images, videos, casts, favorite: favorite, watchLater: isWatchLater)
             } catch {
-                log(error.localizedDescription)
+                log(error)
                 self.state = .failure(error)
             }
         }

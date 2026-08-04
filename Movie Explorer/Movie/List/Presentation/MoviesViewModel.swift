@@ -62,7 +62,7 @@ class MoviesViewModel: ViewModel {
             } catch let urlError as URLError where urlError.code == .cancelled {
                 return
             } catch {
-                log(error.localizedDescription)
+                log(error)
                 self.state = .content(movies, error)
             }
         }

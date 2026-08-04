@@ -44,14 +44,16 @@ struct AsyncPosterImage: View {
     @ViewBuilder
     private func Error() -> some View {
         ZStack(alignment: .center){
-            Image(systemName: "photo.trianglebadge.exclamationmark")
+            Image("PosterPlaceholder")
                 .resizable()
+                .renderingMode(.template)
                 .foregroundColor(.secondary)
-                .font(.title2.bold())
-                .frame(width: 40, height: 40)
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 44, height: 44)
         }
         .frame(width: width, height: height)
         .background { Background() }
+        .accessibilityLabel(Text("posterUnavailable"))
     }
     
     @ViewBuilder

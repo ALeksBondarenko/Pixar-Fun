@@ -40,7 +40,7 @@ class WatchListViewModel: ViewModel {
                 self.state = .idle
                 self.fetchMovies()
             } catch {
-                log(error.localizedDescription)
+                log(error)
                 self.state = .unauthenticated
             }
         }
@@ -85,7 +85,7 @@ class WatchListViewModel: ViewModel {
             } catch let urlError as URLError where urlError.code == .cancelled {
                 return
             } catch {
-                log(error.localizedDescription)
+                log(error)
                 self.state = .content(movies, error)
             }
         }

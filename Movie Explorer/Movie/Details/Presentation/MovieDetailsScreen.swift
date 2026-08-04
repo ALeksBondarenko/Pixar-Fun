@@ -243,9 +243,11 @@ struct MovieDetailsScreen: View {
                         }
                     }
 
-                    Text(movieDetails.releaseDate, style: .date)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    if let releaseDate = movieDetails.releaseDate {
+                        Text(releaseDate, style: .date)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
                 }
                 .padding(.leading)
             }

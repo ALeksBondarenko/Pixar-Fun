@@ -38,7 +38,7 @@ class PersonViewModel: ViewModel {
             } catch let urlError as URLError where urlError.code == .cancelled {
                 return
             } catch {
-                log(error.localizedDescription)
+                log(error)
                 self.state = .error(error)
             }
         }
@@ -73,7 +73,7 @@ class PersonViewModel: ViewModel {
             } catch let urlError as URLError where urlError.code == .cancelled {
                 return
             } catch {
-                log(error.localizedDescription)
+                log(error)
                 self.state = .content(person, photos, movies, error)
             }
         }
