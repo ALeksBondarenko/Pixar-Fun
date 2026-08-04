@@ -82,7 +82,7 @@ struct NetworkClientTests {
         RecordingURLProtocol.capturedAuthorizationHeaders = [:]
 
         let tokenProvider = MutableTokenProvider(token: "token-1")
-        let client = NetworkClient(
+        let client = await NetworkClient(
             connectionErrorMapper: ConnectionErrorMapper(),
             sessionTokenProvider: tokenProvider,
             urlSession: makeMockURLSession()
@@ -106,7 +106,7 @@ struct NetworkClientTests {
         RecordingURLProtocol.capturedAuthorizationHeaders = [:]
 
         let tokenProvider = MutableTokenProvider(token: "default-token")
-        let client = NetworkClient(
+        let client = await NetworkClient(
             connectionErrorMapper: ConnectionErrorMapper(),
             sessionTokenProvider: tokenProvider,
             urlSession: makeMockURLSession()

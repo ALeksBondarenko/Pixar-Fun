@@ -5,8 +5,8 @@
 //  Created by Александр Бондаренко on 30.12.2025.
 //
 
-import Foundation
 import Combine
+import Foundation
 
 class WatchListViewModel: ViewModel {
 
@@ -29,7 +29,7 @@ class WatchListViewModel: ViewModel {
         }
         if case .idle = state {
             state = .loading
-            fetchPage(nextPage: currentPage)
+            fetchPage(nextPage: 1)
         }
     }
 
@@ -45,35 +45,40 @@ class WatchListViewModel: ViewModel {
             }
         }
     }
-    
+
     func refreshMovies() {
         state = .loading
         fetchPage(nextPage: 1)
     }
-    
+
     func fetchMoreMovies() {
         guard currentPage < maxPages else { return }
-        fetchPage(nextPage: currentPage + 1)
+        guard case .content(let movies, _) = state else { return }
+        fetchPage(movies: movies, nextPage: currentPage + 1)
     }
-    
+
     func reloadLastPage() {
-        if case .error(_) = state {
-            fetchPage(nextPage: currentPage)
-        }
+        guard case .content(let movies, _) = state else { return }
+        fetchPage(movies: movies, nextPage: currentPage + 1)
     }
-    
+
+    func clearError() {
+        guard case .content(let movies, _) = state else { return }
+        self.state = .content(movies, nil)
+    }
+
     private func fetchPage(movies: [Movie] = [], nextPage: Int) {
         cancelAllTasks()
         addTask { @MainActor in
             do {
-                let page = try await self.repository.fetchMovies(page: self.currentPage)
-                self.currentPage = page.page ?? 0
-                self.maxPages = page.totalPages 
-                let movies = movies + page.results
-                if movies.isEmpty {
+                let page = try await self.repository.fetchMovies(page: nextPage)
+                self.currentPage = page.page ?? nextPage
+                self.maxPages = page.totalPages
+                let allMovies = movies + page.results
+                if allMovies.isEmpty {
                     self.state = .empty
                 } else {
-                    self.state = .content(movies)
+                    self.state = .content(allMovies, nil)
                 }
             } catch is CancellationError {
                 return
@@ -81,7 +86,7 @@ class WatchListViewModel: ViewModel {
                 return
             } catch {
                 log(error.localizedDescription)
-                self.state = .error(error)
+                self.state = .content(movies, error)
             }
         }
     }

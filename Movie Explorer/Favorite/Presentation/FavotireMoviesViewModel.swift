@@ -48,38 +48,41 @@ class FavotireMoviesViewModel: ViewModel {
     }
     
     func refreshFavotireMovies() {
-        movies.removeAll()
-        currentPage = 1
         state = .loading
-        fetchPage(nextPage: currentPage)
+        fetchPage(nextPage: 1)
     }
     
     func fetchMoreFavotireMovies() {
-        if currentPage >= maxPages {
-            return
-        }
-        currentPage = currentPage + 1
-        fetchPage(nextPage: currentPage)
+        guard currentPage < maxPages else { return }
+        guard case .content(let movies, _) = state else { return }
+        fetchPage(movies: movies, nextPage: currentPage + 1)
     }
     
     func reloadLastPage() {
-        if case .error = state {
-            fetchPage(nextPage: currentPage)
-        }
+        guard case .content(let movies, _) = state else { return }
+        fetchPage(movies: movies, nextPage: currentPage + 1)
     }
-    
-    private func fetchPage(nextPage: Int) {
+
+    func clearError() {
+        guard case .content(let movies, _) = state else { return }
+        self.state = .content(movies, nil)
+    }
+
+    private func fetchPage(movies: [Movie] = [], nextPage: Int) {
         cancelAllTasks()
+
         addTask { @MainActor in
             do {
-                let page = try await self.repository.fetchFavoriteMovies(page: self.currentPage)
-                self.movies = self.movies + page.results
-                self.currentPage = page.page ?? 0
+                let page = try await self.repository.fetchFavoriteMovies(page: nextPage)
+                self.currentPage = page.page ?? nextPage
                 self.maxPages = page.totalPages
-                if self.movies.isEmpty {
+                
+                let allMovies = movies + page.results
+                
+                if allMovies.isEmpty {
                     self.state = .empty
                 } else {
-                    self.state = .content(self.movies)
+                    self.state = .content(allMovies, nil)
                 }
             } catch is CancellationError {
                 return
@@ -87,7 +90,7 @@ class FavotireMoviesViewModel: ViewModel {
                 return
             } catch {
                 log(error.localizedDescription)
-                self.state = .error(error)
+                self.state = .content(movies, error)
             }
         }
     }

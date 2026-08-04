@@ -20,14 +20,17 @@ struct WatchListScreen: View {
                 FullScreenProgressView()
             case .empty:
                 EmptyMoviesView()
-            case .content(let movies):
+            case .content(let movies, let error):
                 WatchListMovies(
                     movies: movies,
                     refresh: viewModel.refreshMovies,
                     loadNextPage: viewModel.fetchMoreMovies
                 )
-            case .error(let error):
-                ErrorView(error: error, onRetry: viewModel.reloadLastPage, onCancel: coordinator.pop)
+                .alerError(
+                    error: error,
+                    onRetry: viewModel.reloadLastPage,
+                    onCancel: viewModel.clearError,
+                )
             case .unauthenticated:
                 LoginPromptView(login: viewModel.login)
             }

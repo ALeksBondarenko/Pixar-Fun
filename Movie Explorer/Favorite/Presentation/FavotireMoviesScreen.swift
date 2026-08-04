@@ -19,14 +19,17 @@ struct FavotireMoviesScreen: View {
                 FullScreenProgressView()
             case .empty:
                 EmptyMoviesView()
-            case .content(let movies):
+            case .content(let movies, let error):
                 FavoriteMovies(
                     movies: movies,
                     refresh: viewModel.refreshFavotireMovies,
                     loadNextPage: viewModel.fetchMoreFavotireMovies
                 )
-            case .error(let error):
-                ErrorView(error: error, onRetry: viewModel.reloadLastPage, onCancel: coordinator.pop)
+                .alerError(
+                    error: error,
+                    onRetry: viewModel.reloadLastPage,
+                    onCancel: viewModel.clearError,
+                )
             case .unauthenticated:
                 LoginPromptView(login: viewModel.login)
             }

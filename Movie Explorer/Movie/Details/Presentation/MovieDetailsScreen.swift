@@ -92,6 +92,7 @@ struct MovieDetailsScreen: View {
 
                     Text(movieDetails.overview)
                         .font(.body)
+                        .truncationEffect(lenght: 3, moreText: "more", animation: .smooth(duration: 0.5, extraBounce: 0))
                         .padding(.horizontal)
                 }
 

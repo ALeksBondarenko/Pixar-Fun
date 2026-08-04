@@ -11,7 +11,6 @@ enum WatchListState {
     case idle
     case loading
     case empty
-    case content([Movie])
-    case error(Error)
+    case content([Movie], Error?)
     case unauthenticated
 }

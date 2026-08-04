@@ -33,6 +33,10 @@ struct ContentView: View {
                 SearchScreen(viewModel: DIContainer.shared.container.resolve(SearchViewModel.self)!)
                 .environmentObject(coordinator)
             }
+            
+            Tab("aboutButtonAccessibilityLabel", systemImage: "info.circle") {
+                AboutView()
+            }
         }
     }
 }

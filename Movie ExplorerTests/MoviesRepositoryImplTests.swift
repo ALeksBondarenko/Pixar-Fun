@@ -18,7 +18,22 @@ struct MoviesRepositoryImplTests {
         var result: Page?
         var error: Error?
         
-        func fetchMovies(page: Int, genre: Genres?) async throws -> Page {
+        func fetchMovies(page: Int) async throws -> Page {
+            receivedPage = page
+            
+            if let error = error {
+                throw error
+            }
+            
+            guard let result = result else {
+                Issue.record("Result is not set")
+                throw MockError.resultNotSet
+            }
+            
+            return result
+        }
+        
+        func fetchMovies(page: Int, genre: Genres) async throws -> Movie_Explorer.Page {
             receivedPage = page
             receivedGenre = genre
             

@@ -23,8 +23,13 @@ class MoviesViewModel: ViewModel {
     func fetchMovies() {
         if case .idle = state {
             state = .loading
-            fetchPage(nextPage: currentPage)
+            fetchPage(nextPage: 1)
         }
+    }
+    
+    func reloadLastPage() {
+        guard case .content(let movies, _) = state else { return }
+        fetchPage(movies: movies, nextPage: currentPage + 1)
     }
     
     func refreshMovies() {
@@ -49,7 +54,7 @@ class MoviesViewModel: ViewModel {
         addTask { @MainActor in
             do {
                 let page = try await self.repository.fetchMovies(page: nextPage)
-                self.currentPage = page.page ?? 0
+                self.currentPage = page.page ?? nextPage
                 self.maxPages = page.totalPages
                 self.state = .content(movies + page.results, nil)
             } catch is CancellationError {

@@ -11,7 +11,6 @@ struct MoviesScreen: View {
 
     @StateObject var viewModel: MoviesViewModel
     @EnvironmentObject var coordinator: Coordinator
-    @State private var isShowingAbout = false
 
     var body: some View {
         Group {
@@ -25,7 +24,7 @@ struct MoviesScreen: View {
                     loadNextPage: viewModel.fetchMoreMovies
                 ).alerError(
                     error: error,
-                    onRetry: viewModel.refreshMovies,
+                    onRetry: viewModel.reloadLastPage,
                     onCancel: viewModel.clearError
                 )
             }
@@ -34,19 +33,6 @@ struct MoviesScreen: View {
         }
         .onDisappear {
             viewModel.cancelAllTasks()
-        }
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    isShowingAbout = true
-                } label: {
-                    Image(systemName: "info.circle")
-                }
-                .accessibilityLabel(Text("aboutButtonAccessibilityLabel"))
-            }
-        }
-        .sheet(isPresented: $isShowingAbout) {
-            AboutView()
         }
     }
     

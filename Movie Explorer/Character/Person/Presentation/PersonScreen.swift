@@ -17,20 +17,25 @@ struct PersonScreen: View {
             switch viewModel.state {
             case .loading:
                 FullScreenProgressView()
-            case .content(let person, let photos, let movies):
+            case .content(let person, let photos, let movies, let error):
                 PersonView(
                     person: person,
                     photos: photos,
                     movies: movies,
-                    refresh: viewModel.load,
+                    refresh: viewModel.loadInitMoviePage,
                     loadNextMoviePage: viewModel.loadNextMoviePage,
                 )
+                .alerError(
+                    error: error,
+                    onRetry: viewModel.reloadLastPage,
+                    onCancel: viewModel.clearError,
+                )
             case .error(let error):
-                ErrorView(error: error, onRetry: viewModel.load, onCancel: coordinator.pop)
+                ErrorView(error: error, onRetry: viewModel.loadInitMoviePage, onCancel: coordinator.pop)
             }
         }
         .onAppear {
-            viewModel.load()
+            viewModel.loadInitMoviePage()
         }
         .onDisappear {
             viewModel.cancelAllTasks()
@@ -52,24 +57,34 @@ struct PersonScreen: View {
                 
                 Spacer()
                 
-                Text("biography")
-                    .font(.title2.bold())
-                    .foregroundColor(.primary)
-                    .padding(.horizontal)
+                if !person.biography.isEmpty {
+                    Text("biography")
+                        .font(.title2.bold())
+                        .foregroundColor(.primary)
+                        .padding(.horizontal)
+                    
+                    
+                    Text(person.biography)
+                        .font(.caption)
+                        .truncationEffect(lenght: 3, moreText: "more", animation: .smooth(duration: 0.5, extraBounce: 0))
+                        .padding(.horizontal)
+                }
                 
-                
-                Text(person.biography)
-                    .font(.caption)
-                    .truncationEffect(lenght: 3, moreText: "more", animation: .smooth(duration: 0.5, extraBounce: 0))
-                    .padding(.horizontal)
-                
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 10) {
-                        ForEach(photos, id: \.filePath) { photo in
-                            ScalableAsyncImageView(string: photo.filePath)
-                                .frame(width: 160, height: 240)
-                        }
-                    }.padding(.horizontal)
+                if !photos.isEmpty {
+                    Text("photo")
+                        .font(.title2.bold())
+                        .foregroundColor(.primary)
+                        .padding(.top, 12)
+                        .padding(.horizontal)
+                    
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 10) {
+                            ForEach(photos, id: \.filePath) { photo in
+                                ScalableAsyncImageView(string: photo.filePath)
+                                    .frame(width: 160, height: 240)
+                            }
+                        }.padding(.horizontal)
+                    }
                 }
                 
                 Text("movies")

@@ -22,7 +22,7 @@ class PersonViewModel: ViewModel {
         self.cast = cast
     }
     
-    func load() {
+    func loadInitMoviePage() {
         addTask { @MainActor in
             do {
                 async let personResult = self.repository.getPerson(personId: self.cast.id)
@@ -32,7 +32,11 @@ class PersonViewModel: ViewModel {
                 let (person, photos, page) = try await (personResult, photosResult, pageResult)
                 
                 self.totalPage = page.totalPages
-                self.state = .content(person, photos, page.results)
+                self.state = .content(person, photos, page.results, nil)
+            } catch is CancellationError {
+                return
+            } catch let urlError as URLError where urlError.code == .cancelled {
+                return
             } catch {
                 log(error.localizedDescription)
                 self.state = .error(error)
@@ -42,20 +46,35 @@ class PersonViewModel: ViewModel {
     
     func loadNextMoviePage() {
         guard page < totalPage else { return }
-        guard case .content(let person, let photos, let movies) = state else { return }
+        guard case .content(let person, let photos, let movies, _) = state else { return }
+        fetchPage(person: person, photos: photos, movies: movies, nextPage: page + 1)
+    }
+
+    func reloadLastPage() {
+        guard case .content(let person, let photos, let movies, _) = state else { return }
+        fetchPage(person: person, photos: photos, movies: movies, nextPage: page + 1)
+    }
+
+    func clearError() {
+        guard case .content(let person, let photos, let movies, _) = state else { return }
+        self.state = .content(person, photos, movies, nil)
+    }
+
+    private func fetchPage(person: Person, photos: [PersonImage], movies: [Movie] = [], nextPage: Int) {
         cancelAllTasks()
-        addTask {
+        addTask { @MainActor in
             do {
-                let result = try await self.repository.getMoviesWithPerson(personId: self.cast.id, page: self.page + 1)
-                defer { self.page += 1 }
-                self.state = .content(person, photos, movies + result.results)
+                let result = try await self.repository.getMoviesWithPerson(personId: self.cast.id, page: nextPage)
+                self.page = nextPage
+                self.totalPage = result.totalPages
+                self.state = .content(person, photos, movies + result.results, nil)
             } catch is CancellationError {
                 return
             } catch let urlError as URLError where urlError.code == .cancelled {
                 return
             } catch {
                 log(error.localizedDescription)
-                self.state = .error(error)
+                self.state = .content(person, photos, movies, error)
             }
         }
     }

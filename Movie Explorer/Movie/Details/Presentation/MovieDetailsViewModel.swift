@@ -31,7 +31,14 @@ class MovieDetailsViewModel: ViewModel {
                 async let statusResult = self.currentMovieStatus()
 
                 let (movieDetails, videos, images, casts, status) = try await (detailsResult, videosResult, imagesResult, castsResult, statusResult)
-                self.state = .success(movieDetails, images, videos, casts, favorite: status?.favorite ?? false, watchLater: status?.watchlist ?? false)
+                self.state = .success(
+                    movieDetails,
+                    images,
+                    videos.filter { $0.type == "Trailer" },
+                    casts,
+                    favorite: status?.favorite ?? false,
+                    watchLater: status?.watchlist ?? false,
+                )
             } catch {
                 self.state = .failure(error)
             }

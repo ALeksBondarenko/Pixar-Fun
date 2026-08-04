@@ -269,10 +269,10 @@ struct MovieDetailsViewModelTests {
         let viewModel = MovieDetailsViewModel(repository: repository, authRepository: authRepository, movie: movie)
 
         viewModel.requestDetails()
-        await Task.yield()
+        await waitForFinalState(viewModel: viewModel)
 
         viewModel.toggleFavorites()
-        await Task.yield()
+        await waitForFavoriteToggleToSettle(viewModel: viewModel)
 
         switch viewModel.state {
         case .success(_, _, _, _, let favorite, _):
@@ -300,12 +300,12 @@ struct MovieDetailsViewModelTests {
         let viewModel = MovieDetailsViewModel(repository: repository, authRepository: authRepository, movie: movie)
 
         viewModel.requestDetails()
-        await Task.yield()
+        await waitForFinalState(viewModel: viewModel)
 
         repository.error = MockError.failed
 
         viewModel.toggleFavorites()
-        await Task.yield()
+        await waitForFailureState(viewModel: viewModel)
 
         switch viewModel.state {
         case .failure(let error):
@@ -409,10 +409,10 @@ struct MovieDetailsViewModelTests {
         let viewModel = MovieDetailsViewModel(repository: repository, authRepository: authRepository, movie: movie)
 
         viewModel.requestDetails()
-        await Task.yield()
+        await waitForFinalState(viewModel: viewModel)
 
         viewModel.toggleWatchLater()
-        await Task.yield()
+        await waitForWatchLaterToggleToSettle(viewModel: viewModel)
 
         switch viewModel.state {
         case .success(_, _, _, _, _, let watchLater):
@@ -440,12 +440,12 @@ struct MovieDetailsViewModelTests {
         let viewModel = MovieDetailsViewModel(repository: repository, authRepository: authRepository, movie: movie)
 
         viewModel.requestDetails()
-        await Task.yield()
+        await waitForFinalState(viewModel: viewModel)
 
         repository.error = MockError.failed
 
         viewModel.toggleWatchLater()
-        await Task.yield()
+        await waitForFailureState(viewModel: viewModel)
 
         switch viewModel.state {
         case .failure(let error):
@@ -502,5 +502,39 @@ private func waitForFinalState(viewModel: MovieDetailsViewModel) async {
         case .success, .failure:
             return
         }
+    }
+}
+
+// `toggleFavorites`/`toggleWatchLater` transition .success -> .success (or .failure)
+// without ever passing through .loading, so waitForFinalState (which only watches for
+// a .loading exit) returns immediately before the toggle's async work has run. These
+// wait for the actual outcome instead, bounded by a timeout so a genuine bug still fails
+// the test rather than hanging it.
+@MainActor
+private func waitForFavoriteToggleToSettle(viewModel: MovieDetailsViewModel, timeout: TimeInterval = 3) async {
+    let deadline = Date().addingTimeInterval(timeout)
+    while Date() < deadline {
+        if case .success(_, _, _, _, true, _) = viewModel.state { return }
+        if case .failure = viewModel.state { return }
+        await Task.yield()
+    }
+}
+
+@MainActor
+private func waitForWatchLaterToggleToSettle(viewModel: MovieDetailsViewModel, timeout: TimeInterval = 3) async {
+    let deadline = Date().addingTimeInterval(timeout)
+    while Date() < deadline {
+        if case .success(_, _, _, _, _, true) = viewModel.state { return }
+        if case .failure = viewModel.state { return }
+        await Task.yield()
+    }
+}
+
+@MainActor
+private func waitForFailureState(viewModel: MovieDetailsViewModel, timeout: TimeInterval = 3) async {
+    let deadline = Date().addingTimeInterval(timeout)
+    while Date() < deadline {
+        if case .failure = viewModel.state { return }
+        await Task.yield()
     }
 }
