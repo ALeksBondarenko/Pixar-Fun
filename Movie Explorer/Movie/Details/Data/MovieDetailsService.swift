@@ -21,6 +21,8 @@ protocol MovieDetailsServiceProtocol {
     func getImages(movieId: Int) async throws -> ImagesResponse
     
     func getCasts(movieId: Int) async throws -> CastsResponse
+    
+    func getSimilar(movieId: Int, page: Int) async throws -> Page
 }
 
 class MovieDetailsService: MovieDetailsServiceProtocol {
@@ -72,6 +74,16 @@ class MovieDetailsService: MovieDetailsServiceProtocol {
         try await networkClient.request(
             .get("https://api.themoviedb.org/3/movie/\(movieId)/credits"),
             queryParams: [Param(name: "language", value: iso3166LanguageCode(Locale.current))]
+        )
+    }
+    
+    func getSimilar(movieId: Int, page: Int) async throws -> Page {
+        try await networkClient.request(
+            .get("https://api.themoviedb.org/3/movie/\(movieId)/similar"),
+            queryParams: [
+                Param(name: "page", value: page),
+                Param(name: "language", value: iso3166LanguageCode(Locale.current)),
+            ]
         )
     }
 }

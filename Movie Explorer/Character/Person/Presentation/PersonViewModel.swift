@@ -27,10 +27,10 @@ class PersonViewModel: ViewModel {
             do {
                 async let personResult = self.repository.getPerson(personId: self.cast.id)
                 async let photosResult = self.repository.getPersonImages(personId: self.cast.id)
-                async let pageResult = self.repository.getMoviesWithPerson(personId: self.cast.id, page: self.page)
+                async let pageResult = self.repository.getMoviesWithPerson(personId: self.cast.id, page: 1)
 
                 let (person, photos, page) = try await (personResult, photosResult, pageResult)
-                
+                self.page = 1
                 self.totalPage = page.totalPages
                 self.state = .content(person, photos, page.results, nil)
             } catch is CancellationError {

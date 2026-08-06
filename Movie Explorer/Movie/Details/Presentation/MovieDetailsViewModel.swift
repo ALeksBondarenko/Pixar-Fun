@@ -13,6 +13,8 @@ class MovieDetailsViewModel: ViewModel {
     let movie: Movie
     @Published private(set) var state: MovieDetailsState = .loading
     @Published private(set) var title: String = ""
+    private var page: Int = 1
+    private var totalPage: Int = 1
 
     init(repository: MovieDetailRepository, authRepository: AuthRepository, movie: Movie) {
         self.repository = repository
@@ -29,8 +31,12 @@ class MovieDetailsViewModel: ViewModel {
                 async let imagesResult = self.repository.getImages(movieId: self.movie.id)
                 async let castsResult = self.repository.getCast(movieId: self.movie.id)
                 async let statusResult = self.currentMovieStatus()
+                async let similarPageResult = self.repository.getSimilar(movieId: self.movie.id, page: 1)
 
-                let (movieDetails, videos, images, casts, status) = try await (detailsResult, videosResult, imagesResult, castsResult, statusResult)
+                let (movieDetails, videos, images, casts, status, similarPage) = try await (detailsResult, videosResult, imagesResult, castsResult, statusResult, similarPageResult)
+                self.page = 1
+                self.totalPage = similarPage.totalPages
+                
                 self.state = .success(
                     movieDetails,
                     images,
@@ -38,6 +44,8 @@ class MovieDetailsViewModel: ViewModel {
                     casts,
                     favorite: status?.favorite ?? false,
                     watchLater: status?.watchlist ?? false,
+                    similarPage.results,
+                    nil
                 )
             } catch {
                 self.state = .failure(error)
@@ -61,10 +69,39 @@ class MovieDetailsViewModel: ViewModel {
             return try await operation()
         }
     }
+    
+    func loadMoreSimilar() {
+        guard page < totalPage else { return }
+        guard case .success(let movie, let photos, let videos, let casts, let favorite, let watchLater, let similarMovies, _) = state else { return }
+        
+        cancelAllTasks()
+        
+        addTask { @MainActor in
+            do {
+                let result = try await self.repository.getSimilar(movieId: self.movie.id, page: self.page + 1)
+                self.page = self.page + 1
+                self.totalPage = result.totalPages
+                
+                self.state = .success(movie, photos, videos, casts, favorite: favorite, watchLater: watchLater, similarMovies + result.results, nil)
+            } catch is CancellationError {
+                return
+            } catch let urlError as URLError where urlError.code == .cancelled {
+                return
+            } catch {
+                log(error)
+                self.state = .success(movie, photos, videos, casts, favorite: favorite, watchLater: watchLater, similarMovies, error)
+            }
+        }
+    }
+    
+    func clearError() {
+        guard case .success(let movie, let photos, let videos, let casts, let favorite, let watchLater, let similarMovies, _) = state else { return }
+        self.state = .success(movie, photos, videos, casts, favorite: favorite, watchLater: watchLater, similarMovies, nil)
+    }
 
     func toggleFavorites() {
         addTask { @MainActor in
-            guard case .success(let movie, let images, let videos, let casts, let favorite, let watchLater) = self.state else {
+            guard case .success(let movie, let photos, let videos, let casts, let favorite, let watchLater, let similarMovies, _) = self.state else {
                 return
             }
             do {
@@ -75,7 +112,7 @@ class MovieDetailsViewModel: ViewModel {
                         return try await self.repository.addToFavorites(movieId: self.movie.id)
                     }
                 }
-                self.state = .success(movie, images, videos, casts, favorite: isFavorite, watchLater: watchLater)
+                self.state = .success(movie, photos, videos, casts, favorite: isFavorite, watchLater: watchLater, similarMovies, nil)
             } catch {
                 log(error)
                 self.state = .failure(error)
@@ -85,7 +122,7 @@ class MovieDetailsViewModel: ViewModel {
 
     func toggleWatchLater() {
         addTask { @MainActor in
-            guard case .success(let movie, let images, let videos, let casts, let favorite, let watchLater) = self.state else {
+            guard case .success(let movie, let photos, let videos, let casts, let favorite, let watchLater, let similarMovies, _) = self.state else {
                 return
             }
             do {
@@ -96,7 +133,7 @@ class MovieDetailsViewModel: ViewModel {
                         return try await self.repository.addToWatchLater(movieId: self.movie.id)
                     }
                 }
-                self.state = .success(movie, images, videos, casts, favorite: favorite, watchLater: isWatchLater)
+                self.state = .success(movie, photos, videos, casts, favorite: favorite, watchLater: isWatchLater, similarMovies, nil)
             } catch {
                 log(error)
                 self.state = .failure(error)

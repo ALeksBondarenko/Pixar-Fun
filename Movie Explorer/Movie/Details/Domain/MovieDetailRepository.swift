@@ -26,4 +26,6 @@ protocol MovieDetailRepository {
     func getVideos(movieId: Int) async throws -> [Video]
     
     func getCast(movieId: Int) async throws -> [Cast]
+    
+    func getSimilar(movieId: Int, page: Int) async throws -> Page
 }

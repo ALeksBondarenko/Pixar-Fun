@@ -39,6 +39,10 @@ struct MovieDetailRepositoryImplTests {
         var castsResult: CastsResponse?
         var castsMovieId: Int?
 
+        var similarResult: Page?
+        var similarMovieId: Int?
+        var similarPage: Int?
+
         func getDetails(movieId: Int) async throws -> MovieDetails {
             if let error = error {
                 throw error
@@ -112,6 +116,19 @@ struct MovieDetailRepositoryImplTests {
             castsMovieId = movieId
             guard let result = castsResult else {
                 Issue.record("castsResult is not set")
+                throw MockError.resultNotSet
+            }
+            return result
+        }
+
+        func getSimilar(movieId: Int, page: Int) async throws -> Page {
+            if let error = error {
+                throw error
+            }
+            similarMovieId = movieId
+            similarPage = page
+            guard let result = similarResult else {
+                Issue.record("similarResult is not set")
                 throw MockError.resultNotSet
             }
             return result
@@ -370,6 +387,27 @@ struct MovieDetailRepositoryImplTests {
 
             #expect(result == casts)
             #expect(service.castsMovieId == 70)
+        } catch {
+            Issue.record("Unexpected error: \(error)")
+        }
+    }
+
+    @Test
+    func testGetSimilarDelegatesToService() async {
+        let service = MockMovieDetailsService()
+        let authRepository = MockAuthRepository()
+        let similarMovie = Movie(id: 2, title: "Finding Nemo", overview: "", posterPath: nil, releaseDate: nil)
+        let page = Page(page: 2, results: [similarMovie], totalPages: 5)
+        service.similarResult = page
+
+        let repository = MovieDetailRepositoryImpl(service: service, authRepository: authRepository)
+
+        do {
+            let result = try await repository.getSimilar(movieId: 80, page: 2)
+
+            #expect(result == page)
+            #expect(service.similarMovieId == 80)
+            #expect(service.similarPage == 2)
         } catch {
             Issue.record("Unexpected error: \(error)")
         }

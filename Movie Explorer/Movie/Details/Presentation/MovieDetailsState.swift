@@ -9,6 +9,6 @@ import Combine
 
 enum MovieDetailsState{
     case loading
-    case success(MovieDetails,[Frame],[Video],[Cast], favorite: Bool = false, watchLater: Bool = false)
+    case success(MovieDetails,[Frame],[Video],[Cast], favorite: Bool = false, watchLater: Bool = false, [Movie], Error?)
     case failure(Error)
 }

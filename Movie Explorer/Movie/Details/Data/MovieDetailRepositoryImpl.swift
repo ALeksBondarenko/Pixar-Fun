@@ -65,4 +65,9 @@ final class MovieDetailRepositoryImpl: MovieDetailRepository {
     func getCast(movieId: Int) async throws -> [Cast] {
         try await service.getCasts(movieId: movieId).cast
     }
+    
+    func getSimilar(movieId: Int, page: Int) async throws -> Page {
+        try await service.getSimilar(movieId: movieId, page: page)
+    }
+    
 }

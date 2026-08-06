@@ -26,7 +26,9 @@ struct MovieDetailsScreen: View {
                 let videos,
                 let casts,
                 let favorite,
-                let watchLater
+                let watchLater,
+                let similarMovies,
+                let error,
             ):
                 MovieDetailsView(
                     movieDetails: movie,
@@ -34,7 +36,13 @@ struct MovieDetailsScreen: View {
                     videos: videos,
                     casts: casts,
                     favorite: favorite,
-                    watchLater: watchLater
+                    watchLater: watchLater,
+                    similarMovies: similarMovies,
+                    loadMoreSimilarMovies: viewModel.loadMoreSimilar,
+                ).alerError(
+                    error: error,
+                    onRetry: viewModel.loadMoreSimilar,
+                    onCancel: viewModel.clearError,
                 )
             case .failure(let error):
                 ErrorView(
@@ -59,7 +67,9 @@ struct MovieDetailsScreen: View {
         videos: [Video],
         casts: [Cast],
         favorite: Bool,
-        watchLater: Bool
+        watchLater: Bool,
+        similarMovies: [Movie],
+        loadMoreSimilarMovies: @escaping @Sendable () -> Void,
     ) -> some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(alignment: .leading) {
@@ -171,6 +181,31 @@ struct MovieDetailsScreen: View {
                                     }
                             }
                         }.padding(.horizontal)
+                    }
+                }
+                
+                if !similarMovies.isEmpty {
+                    Text("similarMovies")
+                        .font(.title2.bold())
+                        .foregroundColor(.primary)
+                        .padding(.top, 12)
+                        .padding(.horizontal)
+                    
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        LazyHStack(spacing: 12) {
+                            ForEach(similarMovies, id: \.id) { movie in
+                                PosterView(movie: movie)
+                                    .onAppear {
+                                        if movie == similarMovies.last {
+                                            loadMoreSimilarMovies()
+                                        }
+                                    }
+                                    .onTapGesture {
+                                        coordinator.route(destination: .details(movie))
+                                    }
+                            }
+                        }
+                        .padding(.horizontal, 15)
                     }
                 }
             }
