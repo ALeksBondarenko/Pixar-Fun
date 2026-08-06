@@ -11,7 +11,10 @@ struct PersonScreen: View {
     
     @StateObject var viewModel: PersonViewModel
     @EnvironmentObject private var coordinator: Coordinator
-    
+
+    @State private var selectedPhotoIndex: Int = 0
+    @State private var isShowingPhotoGallery = false
+
     var body: some View {
         Group {
             switch viewModel.state {
@@ -77,13 +80,40 @@ struct PersonScreen: View {
                         .padding(.top, 12)
                         .padding(.horizontal)
                     
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 10) {
-                            ForEach(photos, id: \.filePath) { photo in
-                                ScalableAsyncImageView(string: photo.filePath)
+                    ScrollViewReader { proxy in
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 10) {
+                                ForEach(Array(photos.enumerated()), id: \.element.filePath) { index, photo in
+                                    CachedAsyncImage(url: URL(string: "https://image.tmdb.org/t/p/w500\(photo.filePath)")) { image in
+                                        image.resizable()
+                                    } placeholder: {
+                                        ProgressView()
+                                    } failure: { _ in
+                                        ProgressView()
+                                    }
+                                    .cornerRadius(16)
+                                    .aspectRatio(contentMode: .fit)
+                                    .contentShape(Rectangle())
+                                    .onTapGesture {
+                                        selectedPhotoIndex = index
+                                        isShowingPhotoGallery = true
+                                    }
                                     .frame(width: 160, height: 240)
+                                    .id(index)
+                                }
+                            }.padding(.horizontal)
+                        }
+                        .onChange(of: selectedPhotoIndex) { _, newIndex in
+                            withAnimation {
+                                proxy.scrollTo(newIndex, anchor: .center)
                             }
-                        }.padding(.horizontal)
+                        }
+                    }
+                    .fullScreenCover(isPresented: $isShowingPhotoGallery) {
+                        ImageGalleryView(
+                            images: photos.map(\.filePath),
+                            currentIndex: $selectedPhotoIndex
+                        )
                     }
                 }
                 

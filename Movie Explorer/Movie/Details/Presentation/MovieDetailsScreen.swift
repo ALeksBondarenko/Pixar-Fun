@@ -12,7 +12,8 @@ struct MovieDetailsScreen: View {
     @StateObject var viewModel: MovieDetailsViewModel
     @EnvironmentObject var coordinator: Coordinator
 
-    @State private var selectedImage: Frame?
+    @State private var selectedImageIndex: Int = 0
+    @State private var isShowingImageGallery = false
 
     var body: some View {
         Group {
@@ -96,15 +97,42 @@ struct MovieDetailsScreen: View {
                         .padding(.horizontal)
                 }
 
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 4) {
-                        ForEach(images, id: \.filePath) { image in
-                            ScalableAsyncImageView(string: image.filePath)
+                ScrollViewReader { proxy in
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 4) {
+                            ForEach(Array(images.enumerated()), id: \.element.filePath) { index, image in
+                                CachedAsyncImage(url: URL(string: "https://image.tmdb.org/t/p/w500\(image.filePath)")) { image in
+                                    image.resizable()
+                                } placeholder: {
+                                    ProgressView()
+                                } failure: { _ in
+                                    ProgressView()
+                                }
+                                .cornerRadius(16)
+                                .aspectRatio(contentMode: .fit)
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    selectedImageIndex = index
+                                    isShowingImageGallery = true
+                                }
                                 .frame(width: 340, height: 180)
+                                .id(index)
+                            }
+                        }
+                        .padding(.horizontal)
+                        .padding(.top)
+                    }
+                    .onChange(of: selectedImageIndex) { _, newIndex in
+                        withAnimation {
+                            proxy.scrollTo(newIndex, anchor: .center)
                         }
                     }
-                    .padding(.horizontal)
-                    .padding(.top)
+                }
+                .fullScreenCover(isPresented: $isShowingImageGallery) {
+                    ImageGalleryView(
+                        images: images.map(\.filePath),
+                        currentIndex: $selectedImageIndex
+                    )
                 }
 
                 if !videos.isEmpty {
